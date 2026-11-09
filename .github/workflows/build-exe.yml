@@ -1,0 +1,45 @@
+
+name: Build Excel Matcher EXE
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify Python file
+        run: |
+          if (!(Test-Path "excel_data_matcher.py")) {
+            Write-Error "excel_data_matcher.py not found"
+            exit 1
+          }
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pandas openpyxl rapidfuzz pyinstaller
+
+      - name: Build EXE
+        run: |
+          python -m PyInstaller --onefile --console --clean --name excel_data_matcher excel_data_matcher.py
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Excel-Match-Finder-Windows
+          path: dist/excel_data_matcher.exe
+          if-no-files-found: error
+          
